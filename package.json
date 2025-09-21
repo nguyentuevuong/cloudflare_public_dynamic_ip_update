@@ -1,0 +1,12 @@
+{
+  "name": "cloudflare-public-dynamic-ip-update",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ./index.js"
+  },
+  "author": "Nguyen Tue Vuong (Ryo)",
+  "license": "ISC",
+  "description": "The API token should have Zone:Read and DNS:Edit permission."
+}

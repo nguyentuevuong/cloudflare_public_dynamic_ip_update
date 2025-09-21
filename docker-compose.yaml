@@ -1,0 +1,12 @@
+services:
+  cloudflare_public_dynamic_ip_update:
+    image: node:alpine
+    container_name: cloudflare-ddns.own.vn
+    restart: always
+    network_mode: bridge
+    working_dir: /workspace
+    volumes:
+      - ./.token:/workspace/.token:ro
+      - ./index.js:/workspace/index.js:ro
+      - ./package.json:/workspace/package.json:ro
+    command: node /workspace/index.js
