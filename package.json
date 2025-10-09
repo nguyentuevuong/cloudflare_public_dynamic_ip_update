@@ -4,9 +4,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node ./index.js"
+    "start": "node ./index.ts"
   },
   "author": "Nguyen Tue Vuong (Ryo)",
   "license": "ISC",
-  "description": "The API token should have Zone:Read and DNS:Edit permission."
+  "description": "The API token should have Zone:Read and DNS:Edit permission.",
+  "devDependencies": {
+    "@types/node": "^24.7.0"
+  }
 }
