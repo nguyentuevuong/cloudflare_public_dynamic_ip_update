@@ -4,11 +4,13 @@ type CheckResult = {
   success: boolean;
 };
 
+type ZoneData = {
+  id: string;
+  name: string;
+};
+
 type GetZoneResult = CheckResult & {
-  result: Array<{
-    id: string;
-    name: string;
-  }>;
+  result: Array<ZoneData>;
 };
 
 type DNSRecord = {
@@ -32,7 +34,30 @@ type SetDNSData = {
   proxied: boolean;
 };
 
-const token = readFileSync("./.token", { encoding: "utf8" });
+enum MSGS {
+  START = "Starting update dns: ",
+  TIME = "  - Time: ",
+  DOMAINS = "  - Domains:",
+}
+
+enum ERRORS {
+  NO_DNS_RECORD_W_ZONE = "  - Cannot get the dns records with current zond id.",
+  NO_DNS_RECORD_W_TOKEN = "  - Cannot get any zone id with current API token.",
+  WRONG_TOKEN = '"  - Error: The API access token was wrong."',
+}
+
+enum APIS {
+  CHECK_API = "https://checkip.amazonaws.com",
+  VERIFY_TOKEN = "https://api.cloudflare.com/client/v4/user/tokens/verify",
+  GET_ZONE = "https://api.cloudflare.com/client/v4/zones?per_page=50",
+}
+
+enum METHODS {
+  GET = "GET",
+  PUT = "PUT",
+}
+
+const token: string = readFileSync("./.token", { encoding: "utf8" });
 
 const headers = {
   Authorization: `Bearer ${token.trim()}`,
@@ -57,8 +82,8 @@ const sleep = async (timeout: number = 60000): Promise<true> => {
  * @returns {Promise<string>}
  */
 const getClientIp = async (): Promise<string> => {
-  const response = await fetch("https://checkip.amazonaws.com", {
-    method: "GET",
+  const response = await fetch(APIS.CHECK_API, {
+    method: METHODS.GET,
   });
 
   const text = await response.text();
@@ -71,10 +96,10 @@ const getClientIp = async (): Promise<string> => {
  * @returns {Promise<CheckResult>}
  */
 const verifyToken = async (): Promise<CheckResult> => {
-  const response = await fetch(
-    "https://api.cloudflare.com/client/v4/user/tokens/verify",
-    { headers, method: "GET" }
-  );
+  const response = await fetch(APIS.VERIFY_TOKEN, {
+    headers,
+    method: METHODS.GET,
+  });
 
   return await response.json();
 };
@@ -84,10 +109,7 @@ const verifyToken = async (): Promise<CheckResult> => {
  * @returns {Promise<GetZoneResult>}
  */
 const getZones = async (): Promise<GetZoneResult> => {
-  const response = await fetch(
-    "https://api.cloudflare.com/client/v4/zones?per_page=50",
-    { headers, method: "GET" }
-  );
+  const response = await fetch(APIS.GET_ZONE, { headers, method: METHODS.GET });
 
   return await response.json();
 };
@@ -100,7 +122,7 @@ const getZones = async (): Promise<GetZoneResult> => {
 const getDNSRecords = async (zoneId: string): Promise<DNSRecordResult> => {
   const response = await fetch(
     `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?type=A&per_page=50`,
-    { headers, method: "GET" }
+    { headers, method: METHODS.GET }
   );
 
   return await response.json();
@@ -120,7 +142,7 @@ const setDNSRecords = async (
 ): Promise<CheckResult> => {
   const response = await fetch(
     `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records/${recordId}`,
-    { headers, method: "PUT", body: JSON.stringify(data) }
+    { headers, method: METHODS.PUT, body: JSON.stringify(data) }
   );
 
   return await response.json();
@@ -130,11 +152,11 @@ while (true) {
   const clientIP = await getClientIp();
   const { success } = await verifyToken();
 
-  console.log("Starting update dns: ");
-  console.log("  - Time: ", new Date());
+  console.log(MSGS.START);
+  console.log(MSGS.TIME, new Date());
 
   if (success) {
-    console.log("  - Domains:");
+    console.log(MSGS.DOMAINS);
 
     const { success, result } = await getZones();
 
@@ -152,7 +174,14 @@ while (true) {
             type,
           } of result) {
             if (clientIP !== content) {
-              const data = { content: clientIP, name, proxied, ttl, type };
+              const data: SetDNSData = {
+                content: clientIP,
+                name,
+                proxied,
+                ttl,
+                type,
+              };
+
               const { success } = await setDNSRecords(zoneId, recordId, data);
 
               if (!success) {
@@ -167,14 +196,14 @@ while (true) {
             }
           }
         } else {
-          console.log("  - Cannot get the dns records with current zond id.");
+          console.log(ERRORS.NO_DNS_RECORD_W_ZONE);
         }
       }
     } else {
-      console.log("  - Cannot get any zone id with current API token.");
+      console.log(ERRORS.NO_DNS_RECORD_W_TOKEN);
     }
   } else {
-    console.log("  - Error: The API access token was wrong.");
+    console.log(ERRORS.WRONG_TOKEN);
   }
 
   console.log();
