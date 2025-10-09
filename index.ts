@@ -34,28 +34,28 @@ type SetDNSData = {
   proxied: boolean;
 };
 
-enum MSGS {
-  START = "Starting update dns: ",
-  TIME = "  - Time: ",
-  DOMAINS = "  - Domains:",
-}
+const MSGS = {
+  START: "Starting update dns: ",
+  TIME: "  - Time: ",
+  DOMAINS: "  - Domains:",
+};
 
-enum ERRORS {
-  NO_DNS_RECORD_W_ZONE = "  - Cannot get the dns records with current zond id.",
-  NO_DNS_RECORD_W_TOKEN = "  - Cannot get any zone id with current API token.",
-  WRONG_TOKEN = '"  - Error: The API access token was wrong."',
-}
+const ERRORS = {
+  NO_DNS_RECORD_W_ZONE: "  - Cannot get the dns records with current zond id.",
+  NO_DNS_RECORD_W_TOKEN: "  - Cannot get any zone id with current API token.",
+  WRONG_TOKEN: "  - Error: The API access token was wrong.",
+};
 
-enum APIS {
-  CHECK_API = "https://checkip.amazonaws.com",
-  VERIFY_TOKEN = "https://api.cloudflare.com/client/v4/user/tokens/verify",
-  GET_ZONE = "https://api.cloudflare.com/client/v4/zones?per_page=50",
-}
+const APIS = {
+  CHECK_API: "https://checkip.amazonaws.com",
+  VERIFY_TOKEN: "https://api.cloudflare.com/client/v4/user/tokens/verify",
+  GET_ZONE: "https://api.cloudflare.com/client/v4/zones?per_page=50",
+};
 
-enum METHODS {
-  GET = "GET",
-  PUT = "PUT",
-}
+const METHODS = {
+  GET: "GET",
+  PUT: "PUT",
+};
 
 const token: string = readFileSync("./.token", { encoding: "utf8" });
 
